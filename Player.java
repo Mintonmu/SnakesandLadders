@@ -1,0 +1,104 @@
+import java.util.Random;
+
+public class Player {
+    private final char name;
+    private Square currentSquare;
+    private Board gameBoard;
+
+    public Player(char name) {
+        this.name = name;
+    }
+
+    public static void main(String[] args) {
+        System.out.println(new Player('E').toString());
+    }
+
+    public char getName() {
+        return name;
+    }
+
+    public Square getCurrentSquare() {
+        return currentSquare;
+    }
+
+    public void setCurrentSquare(Square currentSquare) {
+        this.currentSquare = currentSquare;
+    }
+
+    public void setGameBoard(Board gameBoard) {
+        this.gameBoard = gameBoard;
+    }
+
+    boolean move() {
+        Random random = new Random();
+        int step = random.nextInt(6) + 1;
+        System.out.println(this.name + " rolls the die for " + step);
+        return moveTo(step);
+    }
+
+    boolean moveTo(int step) {
+        int endPosition = gameBoard.getRows() * gameBoard.getCols() - 1;
+        int toPosition = currentSquare.getPosition() + step;
+
+        Square oldSquare = getCurrentSquare();
+        Square newSquare = toPosition < endPosition ? gameBoard.getSquare(toPosition)
+                : gameBoard.getSquare(endPosition);
+
+        setCurrentSquare(newSquare);
+        oldSquare.removePlayer(this);
+        newSquare.addPlayer(this);
+        if (toPosition >= endPosition) {
+            System.out.println(name + " moves " + step + " steps from " + oldSquare.getPosition() + " to " + toPosition
+                    + ", which is at or beyond the game end");
+            System.out.println(gameBoard.toString());
+            return true;
+        } else {
+            System.out
+                    .println(name + " moves " + step + " steps from " + oldSquare.getPosition() + " to " + toPosition);
+            int delta;
+            if ((delta = getCurrentSquare().getDelta()) != 0) {
+                int[] res = new int[2];
+                gameBoard.getRowCol(toPosition, res);
+                res[0] += delta;
+                return slide(gameBoard.getPosition(res[0], res[1]), delta > 0 ? "up" : "down");
+            }
+        }
+        System.out.println(gameBoard.toString());
+        return false;
+    }
+
+    boolean slide(int toPosition, String direction) {
+        int endPosition = gameBoard.getRows() * gameBoard.getCols() - 1;
+
+        Square oldSquare = getCurrentSquare();
+        Square newSquare = toPosition < endPosition ? gameBoard.getSquare(toPosition)
+                : gameBoard.getSquare(endPosition);
+
+        setCurrentSquare(newSquare);
+        oldSquare.removePlayer(this);
+        newSquare.addPlayer(this);
+
+        if (toPosition >= endPosition) {
+            System.out.println(name + " slides " + direction + " from " + oldSquare.getPosition() + " to " + toPosition
+                    + ", which is at or beyond the game end");
+            System.out.println(gameBoard.toString());
+            return true;
+        }
+
+        System.out.println(name + " slides " + direction + " from " + oldSquare.getPosition() + " to " + toPosition);
+        int delta;
+        if ((delta = getCurrentSquare().getDelta()) != 0) {
+            int[] res = new int[2];
+            gameBoard.getRowCol(toPosition, res);
+            res[0] += delta;
+            return slide(gameBoard.getPosition(res[0], res[1]), delta > 0 ? "up" : "down");
+        }
+        System.out.println(gameBoard.toString());
+        return false;
+    }
+
+    @Override
+    public String toString() {
+        return "Player{" + "name=" + name + '}';
+    }
+}
